@@ -39,7 +39,7 @@ public class TesteConcorrenciaController {
 		
 		//processaFileService.processaArquivoS3("mybucket", "arquivo_ee8ce28a-079e-4fbf-8243-e0006c0e2cdc.txt");
 		
-		processaFileService.processaArquivoS3("mybucket", "arquivo_f9f74405-1996-42d3-a552-b9aab48bbba2.txt");
+		processaFileService.processaArquivoS3("mybucket", "arquivo_0bafd5ad-ff11-4394-bd38-f3b599f5dd59.txt");
 		
 		long finishTime = System.currentTimeMillis();
         return new ResponseEntity<>("Elapsed:" + (finishTime - startTime) + "ms", HttpStatus.OK);

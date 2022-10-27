@@ -43,6 +43,8 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.SetObjectTaggingRequest;
 import com.amazonaws.services.s3.model.Tag;
+import com.amazonaws.services.s3.transfer.Transfer.TransferState;
+import com.amazonaws.services.s3.transfer.TransferManager;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -61,6 +63,9 @@ public class S3Service {
     
     @Autowired
     private AmazonS3Client amazonS3Client;
+    
+    @Autowired
+    private TransferManager transferManager;
 
     //Bucket level operations
 
@@ -205,7 +210,7 @@ public class S3Service {
     	List<String> filesGenerate = Collections.synchronizedList(new ArrayList<String>()); 
 		IntStream stream = IntStream.range(0, quantidade); 
 		
-		stream.parallel().forEach(arquivo-> {
+		stream./*parallel().*/forEach(arquivo-> {
 			try {
 				String url = null;
 				String fileKey = "arquivo_" + UUID.randomUUID()+".txt";
@@ -216,7 +221,7 @@ public class S3Service {
 
 					// 10M
 					//1.5M
-					for(int x=1;x<=1500000;x++) {
+					for(int x=1;x<=15000000;x++) {
 						if(x!=1) {
 							bw.write(System.lineSeparator()); // new line
 						}
@@ -245,8 +250,18 @@ public class S3Service {
 				metadata.setHttpExpiresDate(null);
 
 			LOGGER.info("Realizando upload no S3");
-			amazonS3Client.putObject(new PutObjectRequest("/" + bucketName, fileKey, new FileInputStream(fileTemp), metadata)
-					.withCannedAcl(CannedAccessControlList.PublicRead));
+			/*amazonS3Client.putObject(new PutObjectRequest("/" + bucketName, fileKey, new FileInputStream(fileTemp), metadata)
+					.withCannedAcl(CannedAccessControlList.PublicRead));*/
+			
+			com.amazonaws.services.s3.transfer.Upload upload = 
+					transferManager.upload("/" + bucketName, fileKey, fileTemp);
+			
+			
+			while(!upload.isDone()) {
+				System.out.println(upload.getProgress().getPercentTransferred() + " % Transferido");
+				System.out.println(upload.getState());
+			}
+			
 			LOGGER.info("UPLOAD REALIZADO COM SUCESSO no S3");
 
 			// Recupera a url

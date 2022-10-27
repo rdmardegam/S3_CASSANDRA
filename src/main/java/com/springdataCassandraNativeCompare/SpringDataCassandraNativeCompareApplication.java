@@ -24,7 +24,7 @@ public class SpringDataCassandraNativeCompareApplication {
 
 
     public static void main(String[] args) {
-    	/*System.setProperty("datastax-java-driver.advanced.request-tracker.class", "RequestLogger");
+    	System.setProperty("datastax-java-driver.advanced.request-tracker.class", "RequestLogger");
     	System.setProperty("datastax-java-driver.advanced.request-tracker.logs.success.enabled", "true");
     	System.setProperty("datastax-java-driver.advanced.request-tracker.logs.error.enabled", "true");
     	System.setProperty("datastax-java-driver.advanced.request-tracker.logs.slow.enabled", "true");
@@ -35,9 +35,9 @@ public class SpringDataCassandraNativeCompareApplication {
     	System.setProperty("datastax-java-driver.advanced.request-tracker.logs.show-values", "true");
     	System.setProperty("datastax-java-driver.advanced.request-tracker.logs.max-value-length", "100");
     	System.setProperty("datastax-java-driver.advanced.request-tracker.logs.max-values", "100");
-    	System.setProperty("datastax-java-driver.advanced.request-tracker.logs.show-stack-trace", "true");*/
+    	System.setProperty("datastax-java-driver.advanced.request-tracker.logs.show-stack-trace", "true");
 
-    	System.setProperty("datastax-java-driver.protocol.version", "V5");
+    	System.setProperty("datastax-java-driver.protocol.version", "V5"); 
     	
     	
     	System.out.println("PROCESSADORES DISPONIVEIS: " + Runtime.getRuntime().availableProcessors());
@@ -65,8 +65,8 @@ public class SpringDataCassandraNativeCompareApplication {
 //    	executor.setMaxPoolSize(160);
 //    	executor.setQueueCapacity(1000000);
     	
-    	executor.setCorePoolSize(140);  // Quantidade de threads sempre ativas
-    	executor.setMaxPoolSize(180);  // Quantidade de threads ate onde é possivel alargar
+    	executor.setCorePoolSize(400);  // Quantidade de threads sempre ativas
+    	executor.setMaxPoolSize(400);  // Quantidade de threads ate onde é possivel alargar
     	executor.setQueueCapacity(2000000); // Quantidade de item na fila... apos o MaxPoolSize ser atigindo
     	//executor.setThreadNamePrefix("threadPoolExecutor-");
     	executor.initialize();

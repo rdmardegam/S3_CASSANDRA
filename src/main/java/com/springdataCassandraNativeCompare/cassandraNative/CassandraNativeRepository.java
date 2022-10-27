@@ -6,12 +6,10 @@ import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.selectFrom;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.update;
 
-import java.sql.SQLSyntaxErrorException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -29,7 +27,10 @@ import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.servererrors.SyntaxError;
+import com.datastax.oss.driver.api.core.metadata.Metadata;
+import com.datastax.oss.driver.api.core.metadata.Node;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
 import com.datastax.oss.driver.api.querybuilder.update.Update;
@@ -57,11 +58,69 @@ public class CassandraNativeRepository {
     @PostConstruct 
     private void init() {
     	insertAllStatement();
+    	
+    	System.out.println("========= CASSANDRA INFO ===========");
+    	 try (CqlSession session = CqlSession.builder().build()) {
+    	      // We use execute to send a query to Cassandra. This returns a ResultSet, which
+    	      // is essentially a collection of Row objects.
+    	      ResultSet rs = session.execute("select release_version from system.local");
+    	      //  Extract the first row (which is the only one in this case).
+    	      Row row = rs.one();
+
+    	      // Extract the value of the first (and only) column from the row.
+    	      assert row != null;
+    	      String releaseVersion = row.getString("release_version");
+    	      System.out.printf("Cassandra version is: %s%n", releaseVersion);
+    	      
+    	      Metadata metadata = session.getMetadata();
+    	      System.out.printf("Connected session: %s%n", session.getName());
+
+    	      for (Node node : metadata.getNodes().values()) {
+    	        System.out.printf(
+    	            "Datatacenter: %s; Host: %s; Rack: %s%n",
+    	            node.getDatacenter(), node.getEndPoint(), node.getRack());
+    	      }
+
+    	      for (KeyspaceMetadata keyspace : metadata.getKeyspaces().values()) {
+    	        for (TableMetadata table : keyspace.getTables().values()) {
+    	          System.out.printf("Keyspace: %s; Table: %s%n", keyspace.getName(), table.getName());
+    	        }
+    	      }
+    	      
+    	      Metadata metaData = cqlSession.getMetadata();
+    	      log.info("Listing available Nodes:");
+              for (Node host : metaData.getNodes().values()) {
+                  log.info("+ [{}]: datacenter='{}' and rack='{}'", 
+                          host.getListenAddress().orElse(null),
+                          host.getDatacenter(), 
+                          host.getRack());
+              }
+              
+              log.info("Listing available keyspaces:");
+              for (KeyspaceMetadata meta : metaData.getKeyspaces().values()) {
+            	  log.info("+ [{}] \t with replication={}", meta.getName(), meta.getReplication());
+              }
+    	      
+    	      
+    	      System.out.println("PROTOCOLO VERSION: " + session.getContext().getProtocolVersion());
+    	      
+    	      System.out.println("=========              ==========="); 
+    	    
+    	    
+    	 }catch (Exception e) {
+				e.printStackTrace();
+			}
+    	    // The try-with-resources block automatically close the session after we’re done with it.
+    	    // This step is important because it frees underlying resources (TCP connections, thread
+    	    // pools...). In a real application, you would typically do this at shutdown
+    	    // (for example, when undeploying your webapp).
+    	  
+    	
     }
     
     public List<DummyItem> selectAll() {
         try {
-        
+        	
         	if (selectAllStatement == null) {
                 selectAllStatement();
             }
@@ -279,9 +338,9 @@ public class CassandraNativeRepository {
 				e.printStackTrace();
 			}
             
-            if(id%5l == 0) {
+            /*if(id%5l == 0) {
             	int a = Integer.parseInt("A");
-            }
+            }*/
             
             
             
@@ -302,7 +361,7 @@ public class CassandraNativeRepository {
     	BoundStatement boundStatement = null;
     	
     	
-    	if( (new Random().nextInt(100000 - 1 + 1) + 1) > 99990) {
+    	/*if( (new Random().nextInt(100000 - 1 + 1) + 1) > 99990) {
     		 boundStatement = 
              		insertAllStatement.bind("231");
     		
@@ -314,7 +373,16 @@ public class CassandraNativeRepository {
             				item.getCodigo_moeda_origem(),
             				item.getValor());
             
-        }
+        }*/
+    	
+    	
+    	
+    	 boundStatement = 
+         		insertAllStatement.bind(item.getNum_cpf_cnpj(), 
+         				item.getMes_ano_lancamento(), item.getDat_autr(),
+         				item.getCod_chav_lancamento(), 
+         				item.getCodigo_moeda_origem(),
+         				item.getValor());
     	
             cqlSession.execute(boundStatement);
 

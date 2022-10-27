@@ -23,7 +23,7 @@
 		<java.version>15</java.version>
 
 		<!-- Cassandra driver -->
-		<cassandra-java-driver.version>4.14.1</cassandra-java-driver.version>
+		<cassandra-java-driver.version>4.15.0</cassandra-java-driver.version>
 		<cassandra-native-protocol.version>1.4.11</cassandra-native-protocol.version>
 
 		<!-- Third Parties -->
